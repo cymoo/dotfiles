@@ -107,6 +107,9 @@ Plug 'scrooloose/nerdtree'
 " Vim plugin for intensely orgasmic commenting
 Plug 'scrooloose/nerdcommenter'
 
+" A git wrapper
+Plug 'tpope/vim-fugitive'
+
 " A powerful syntax and fuzzy completion completion engine 
 Plug 'Valloric/YouCompleteMe', { 'do': './install.py --clang-completer' }
 

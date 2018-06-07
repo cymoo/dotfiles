@@ -111,7 +111,7 @@ Plug 'scrooloose/nerdcommenter'
 Plug 'tpope/vim-fugitive'
 
 " A powerful syntax and fuzzy completion completion engine 
-Plug 'Valloric/YouCompleteMe', { 'do': './install.py --clang-completer' }
+Plug 'valloric/youcompleteme', { 'do': './install.py --clang-completer' }
 
 " Insert or delete brackets, parens, quotes in pair
 Plug 'jiangmiao/auto-pairs'

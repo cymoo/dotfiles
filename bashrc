@@ -16,6 +16,7 @@ man() {
 
 # vim key-bindings
 set -o vi
+set -o noclobber
 
 ### ALIASES ###
 
@@ -106,6 +107,9 @@ if [[ -n "${BASH_VERSION}" ]]; then
     shopt -s checkwinsize
     shopt -s histappend
 
+    # safe delete
+    alias rm='timeout 3 rm -Iv --one-file-system'
+
     # Enable programmable completion features
     if [ -f /etc/bash_completion ]; then
         . /etc/bash_completion
@@ -147,7 +151,16 @@ case "$_os" in
         MANPATH="$(brew --prefix coreutils)/share/man:$MANPATH"
         ;;
     Linux)
-        # ...
+        # User specific environment and startup programs
+        export PATH="$HOME/.local/bin:$HOME/bin:$PATH"
+        # JDK
+        export JAVA_HOME=/usr/local/jdk
+        export PATH="$JAVA_HOME/bin:$JAVA_HOME/jre/bin:$PATH"
+        export CLASSPATH=.:$JAVA_HOME:$JAVA_HOME/lib
+        # Node
+        export PATH="/usr/local/node/bin:$PATH"
+        # Python3
+        export PATH="/usr/local/python3/bin:$PATH"
         ;;
     FreeBSD)
         # ...

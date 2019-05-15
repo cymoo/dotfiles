@@ -18,7 +18,7 @@ filetype indent on
 set guifont=Menlo:h15
 
 " 设置行距
-set linespace=6
+set linespace=8
 
 " 显示行号
 set nu
@@ -32,8 +32,8 @@ set autoread
 " 鼠标可用
 set mouse=a
 
-" 复制到系统剪切板
-set clipboard=unnamed
+" 复制到系统剪切板，还可在可视模式下选择的内容发送到剪贴板
+set clipboard=unnamed,autoselect
 
 " Tab缩进
 set expandtab
@@ -58,10 +58,14 @@ set ruler
 " 允许折叠
 set foldenable
 " 根据语法折叠
-set fdm=syntax
+set foldmethod=syntax
 " 手动折叠
-" set fdm=manual
-"
+" set foldmethod=manual
+" 若编辑python时，使用indent折叠
+autocmd filetype python set foldmethod=indent
+" 关闭默认折叠
+set foldlevelstart=99
+
 " 不要闪烁
 set novisualbell
 
@@ -113,8 +117,10 @@ nnoremap <D-r> :call QuickRun()<CR>
 autocmd InsertEnter * se cul
 " 浅色显示当前行
 "autocmd InsertLeave * se nocul
+" 保存vimrc时，自动重载
+autocmd BufWritePost $MYVIMRC source $MYVIMRC
 
-"""""""""""
+""""""""""
 " Functions
 """""""""""
 
@@ -153,6 +159,7 @@ Plug 'sheerun/vim-polyglot'
 Plug 'joshdick/onedark.vim'
 
 " A powerful syntax and fuzzy completion completion engine 
+" 还需要下载clang，并手动编译, https://github.com/Valloric/YouCompleteMe
 Plug 'valloric/youcompleteme', { 'do': './install.py --clang-completer' }
 
 " A tree explorer plugin for vim

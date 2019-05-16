@@ -7,20 +7,20 @@ set nocompatible
 " 语法高亮
 syntax on
 
-" File type detection
+" Load plugins according to detected filetype
 filetype on  
-" Loading the plugin files for specific file types
+" Load the plugin files for specific file types
 filetype plugin on  
-" Loading the indent files for specific file types
+" Load the indent files for specific file types
 filetype indent on  
 
-" 设置字体
+" Set font
 set guifont=Menlo:h15
 
-" 设置行距
+" Set line space
 set linespace=8
 
-" 显示行号
+" Show line number
 set nu
 
 " 没有保存或文件只读时弹出确认
@@ -35,12 +35,16 @@ set mouse=a
 " 复制到系统剪切板，还可在可视模式下选择的内容发送到剪贴板
 set clipboard=unnamed,autoselect
 
-" Tab缩进
+" Use spaces instead of tabs
 set expandtab
-set tabstop=4
+" Tab key indents by 4 spaces
+set softtabstop=4
+" > indents by 4 spaces
 set shiftwidth=4
+" Round indent to multiple of 'shiftwidth'.  Applies to > and < commands
+set shiftround
 
-" 自动对齐
+" Indent according to previous line
 set autoindent
 " 智能缩进
 set smartindent
@@ -52,8 +56,16 @@ set incsearch
 set ignorecase
 set showmatch
 
+" Show non-printable characters
+" set list
 " 显示标尺
 set ruler
+
+" Switch between buffers without having to save first.
+set hidden
+
+" Make backspace work as you would expect
+set backspace=indent,eol,start
 
 " 允许折叠
 set foldenable
@@ -62,14 +74,20 @@ set foldmethod=syntax
 " 手动折叠
 " set foldmethod=manual
 " 若编辑python时，使用indent折叠
-autocmd filetype python set foldmethod=indent
+autocmd filetype python setlocal foldmethod=indent
 " 关闭默认折叠
 set foldlevelstart=99
 
 " 不要闪烁
 set novisualbell
 
-" 启动显示状态行
+" 开启拼写检查
+" set spell
+" set spelllang=en
+
+" Show current mode in command-line
+set showmode
+"" 启动显示状态行
 set laststatus=2
 
 " 显示输入的命令
@@ -88,6 +106,18 @@ set nobackup
 
 " 如果多少毫秒内没有输入，swap文件将被写入磁盘，默认为4s，gitgutter推荐设置为100ms
 set updatetime=100
+
+" Put all temporary files under the same directory.
+" https://github.com/mhinz/vim-galore#handling-backup-swap-undo-and-viminfo-files
+"set backup
+"set backupdir=$HOME/.vim/files/backup/
+"set backupext=-vimbackup
+"set backupskip=
+"set directory=$HOME/.vim/files/swap//
+"set updatecount=100
+"set undofile
+"set undodir=$HOME/.vim/files/undo/
+"set viminfo='100,n$HOME/.vim/files/info/viminfo
 
 "设置键盘映射，通过空格设置折叠
 nnoremap <space> @=((foldclosed(line('.')<0)?'zc':'zo'))<CR>
@@ -115,10 +145,16 @@ nnoremap <D-r> :call QuickRun()<CR>
 
 " 用浅色高亮当前行
 autocmd InsertEnter * se cul
-" 浅色显示当前行
-"autocmd InsertLeave * se nocul
+autocmd InsertLeave * se nocul
+
 " 保存vimrc时，自动重载
 autocmd BufWritePost $MYVIMRC source $MYVIMRC
+
+" 打开文件时，恢复光标位置
+autocmd BufReadPost *
+    \ if line("'\"") > 1 && line("'\"") <= line("$") |
+    \     exe "normal! g`\"" |
+    \ endif
 
 """"""""""
 " Functions
@@ -176,6 +212,9 @@ Plug 'jiangmiao/auto-pairs'
 
 " Lean & mean status/tabline for vim that's light as air
 Plug 'vim-airline/vim-airline'
+
+" A better JSON for vim: distinct highlighting of keywords vs values, warnings, quote
+Plug 'elzr/vim-json'
 
 " Initialize plugin system
 call plug#end()

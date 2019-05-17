@@ -32,8 +32,16 @@ set autoread
 " 鼠标可用
 set mouse=a
 
+" 在MAC或windows下
+" 选中或在可视化模式下，自动将内容放入剪贴板
+set guioptions+=a
 " 复制到系统剪切板，还可在可视模式下选择的内容发送到剪贴板
 set clipboard=unnamed,autoselect
+
+" 在BSD或linux下
+" set clipboard^=unnamed      " * 寄存器 (选择文本 + 鼠标中键)
+" 或
+" set clipboard^=unnamedplus  " + 寄存器 (选择文本并按ctrl+c + ctrl+v)
 
 " Use spaces instead of tabs
 set expandtab
@@ -102,22 +110,23 @@ set termencoding=utf-8
 " vim内部使用的编码方式，包括buffer， 菜单文本，消息文本等
 set encoding=utf-8
 
-set nobackup
-
 " 如果多少毫秒内没有输入，swap文件将被写入磁盘，默认为4s，gitgutter推荐设置为100ms
 set updatetime=100
 
 " Put all temporary files under the same directory.
 " https://github.com/mhinz/vim-galore#handling-backup-swap-undo-and-viminfo-files
-"set backup
-"set backupdir=$HOME/.vim/files/backup/
-"set backupext=-vimbackup
-"set backupskip=
-"set directory=$HOME/.vim/files/swap//
-"set updatecount=100
-"set undofile
-"set undodir=$HOME/.vim/files/undo/
-"set viminfo='100,n$HOME/.vim/files/info/viminfo
+
+" 如果文件夹不存在，则新建文件夹
+if !isdirectory($HOME.'/.vim/tmp') && exists('*mkdir')
+    call mkdir($HOME.'/.vim/tmp')
+endif
+
+" 撤销文件
+set undofile
+set undodir=$HOME/.vim/tmp/undo/
+
+" viminfo文件
+set viminfo='100,n$HOME/.vim/tmp/viminfo
 
 "设置键盘映射，通过空格设置折叠
 nnoremap <space> @=((foldclosed(line('.')<0)?'zc':'zo'))<CR>
@@ -136,10 +145,6 @@ nnoremap <D-2> 2gt
 nnoremap <D-3> 3gt
 nnoremap <D-4> 4gt
 nnoremap <D-5> 5gt
-nnoremap <D-6> 6gt
-nnoremap <D-7> 7gt
-nnoremap <D-8> 8gt
-nnoremap <D-9> 9gt
 " A very simple quick run
 nnoremap <D-r> :call QuickRun()<CR>
 
@@ -196,7 +201,7 @@ Plug 'joshdick/onedark.vim'
 
 " A powerful syntax and fuzzy completion completion engine 
 " 还需要下载clang，并手动编译, https://github.com/Valloric/YouCompleteMe
-Plug 'valloric/youcompleteme', { 'do': './install.py --clang-completer' }
+Plug 'valloric/youcompleteme', { 'do': './install.py --clang-completer --ts-completer --java-completer' }
 
 " A tree explorer plugin for vim
 Plug 'scrooloose/nerdtree'
@@ -239,6 +244,24 @@ let g:ycm_add_preview_to_completeopt = 1
 " let g:ycm_autoclose_preview_window_after_insertion = 0
 " let g:ycm_key_invoke_completion = '<D-;>'
 let g:ycm_semantic_triggers =  {'c,cpp,python,java,go': ['re!\w{2}'], 'cs,lua,javascript': ['re!\w{2}']}
+
+" Commenter config
+" Add spaces after comment delimiters by default
+let g:NERDSpaceDelims = 1
+" Use compact syntax for prettified multi-line comments
+let g:NERDCompactSexyComs = 1
+" Align line-wise comment delimiters flush left instead of following code indentation
+let g:NERDDefaultAlign = 'left'
+" Set a language to use its alternate delimiters by default
+" let g:NERDAltDelims_java = 1
+" Add your own custom formats or override the defaults
+" let g:NERDCustomDelimiters = { 'c': { 'left': '/**','right': '*/' } }
+" Allow commenting and inverting empty lines (useful when commenting a region)
+let g:NERDCommentEmptyLines = 1
+" Enable trimming of trailing whitespace when uncommenting
+let g:NERDTrimTrailingWhitespace = 1
+" Enable NERDCommenterToggle to check all selected lines is commented or not
+let g:NERDToggleCheckAllLines = 1
 
 " A specific key or shortcut to open NERDTree
 nnoremap <C-n> :NERDTreeToggle<CR>

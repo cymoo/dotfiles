@@ -246,7 +246,7 @@ endif
 
 
 """""""""""
-" Plugging: https://github.com/junegunn/vim-plug
+" Plugin: https://github.com/junegunn/vim-plug
 """""""""""
 
 

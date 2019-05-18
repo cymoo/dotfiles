@@ -1,8 +1,10 @@
 set nocompatible
 
+
 """""""""""
 " Basic config
 """""""""""
+
 
 " 语法高亮
 syntax on
@@ -16,12 +18,11 @@ filetype indent on
 
 " Set font
 set guifont=Menlo:h15
-
 " Set line space
 set linespace=8
 
 " Show line number
-set nu
+set number
 
 " 没有保存或文件只读时弹出确认
 set confirm
@@ -32,13 +33,13 @@ set autoread
 " 鼠标可用
 set mouse=a
 
-" 在MAC或windows下
+" 1. 在MAC或windows下
 " 选中或在可视化模式下，自动将内容放入剪贴板
 set guioptions+=a
 " 复制到系统剪切板，还可在可视模式下选择的内容发送到剪贴板
 set clipboard=unnamed,autoselect
 
-" 在BSD或linux下
+" 2. 在BSD或linux下
 " set clipboard^=unnamed      " * 寄存器 (选择文本 + 鼠标中键)
 " 或
 " set clipboard^=unnamedplus  " + 寄存器 (选择文本并按ctrl+c + ctrl+v)
@@ -62,10 +63,13 @@ set hlsearch
 " 增量搜索
 set incsearch
 set ignorecase
+
+" When a bracket is inserted, briefly jump to the matching one
 set showmatch
 
 " Show non-printable characters
 " set list
+
 " 显示标尺
 set ruler
 
@@ -77,7 +81,7 @@ set backspace=indent,eol,start
 
 " 允许折叠
 set foldenable
-" 根据语法折叠
+" 根据语法折叠，会导致vim变慢，视情况关闭
 set foldmethod=syntax
 " 手动折叠
 " set foldmethod=manual
@@ -113,6 +117,9 @@ set encoding=utf-8
 " 如果多少毫秒内没有输入，swap文件将被写入磁盘，默认为4s，gitgutter推荐设置为100ms
 set updatetime=100
 
+" 若行比较长，则剩下的不让vim高亮以提高速度
+set synmaxcol=200
+
 " Put all temporary files under the same directory.
 " https://github.com/mhinz/vim-galore#handling-backup-swap-undo-and-viminfo-files
 
@@ -128,29 +135,62 @@ set undodir=$HOME/.vim/tmp/undo/
 " viminfo文件
 set viminfo='100,n$HOME/.vim/tmp/viminfo
 
+
+"""""""""""
+" Map
+"""""""""""
+
+
 "设置键盘映射，通过空格设置折叠
 nnoremap <space> @=((foldclosed(line('.')<0)?'zc':'zo'))<CR>
+
+" 键up down更智能些，可以匹配已经存在的历史命令
+cnoremap <c-n> <down>
+cnoremap <c-p> <up>
+
+" 执行重绘，取消高亮，修复代码高亮问题，刷新比较模式
+nnoremap <leader>l :nohlsearch<cr>:diffupdate<cr>:syntax sync fromstart<cr><c-l>
+
+" 快速移动当前行，比如 2]e 把当前行向下移动两行
+nnoremap [e  :<c-u>execute 'move -1-'. v:count1<cr>
+nnoremap ]e  :<c-u>execute 'move +'. v:count1<cr>
+
+" 快速添加空行，比如 5[空格 在当前行上方插入5个空行
+nnoremap [<space>  :<c-u>put! =repeat(nr2char(10), v:count1)<cr>'[
+nnoremap ]<space>  :<c-u>put =repeat(nr2char(10), v:count1)<cr>
+
 " Reselect after > or <
 xnoremap < <gv
 xnoremap > >gv
+
 " 切分窗口
 nnoremap sv <C-w>v
 nnoremap ss <C-w>s
+
 " 打开两个窗口时，在一个窗口滚动另一个窗口内容
 nnoremap vd <C-w>w<C-d><C-w>p
 nnoremap vu <C-w>w<C-u><C-w>p
+
 " 切换tab
 nnoremap <D-1> 1gt
 nnoremap <D-2> 2gt
 nnoremap <D-3> 3gt
 nnoremap <D-4> 4gt
 nnoremap <D-5> 5gt
-" A very simple quick run
-nnoremap <D-r> :call QuickRun()<CR>
 
-" 用浅色高亮当前行
-autocmd InsertEnter * se cul
-autocmd InsertLeave * se nocul
+" A very simple quick run
+" nnoremap <D-r> :call QuickRun()<CR>
+
+
+"""""""""""
+" Auto command
+"""""""""""
+
+
+" 当前行高亮：只让效果出现在当前窗口，并在插入模式中关闭此效果
+" 会导致vim变慢，视情况关闭
+autocmd InsertLeave,WinEnter * set cursorline
+autocmd InsertEnter,WinLeave * set nocursorline
 
 " 保存vimrc时，自动重载
 autocmd BufWritePost $MYVIMRC source $MYVIMRC
@@ -161,24 +201,54 @@ autocmd BufReadPost *
     \     exe "normal! g`\"" |
     \ endif
 
+" 快速跳转到源（头）文件：然后摁'C或'H即可快速跳转回去
+autocmd BufLeave *.{c,cpp} mark C
+autocmd BufLeave *.h       mark H
+
+
 """"""""""
 " Functions
 """""""""""
 
+
+" FIXME: 此函数好像无效了？
 func! QuickRun()
     if &filetype == 'c'
         exec '!gcc % -o %<'
         exec '!time ./%<'
+        exec '!rm ./%<'
     elseif &filetype == 'python'
         exec '!time python3 %'
+    elseif &filetype == 'javascript'
+        :!time node %
     elseif &filetype == 'sh'
         :!time bash %
     endif
 endfunc
 
+
+""""""""""
+" Misc
 """""""""""
-" Pluggin: https://github.com/junegunn/vim-plug
+
+
+" 插入模式下条状光标，普通模式下块状光标，替换模式下下划线光标
+" NOTE: MAC的iTerm2运行良好，Linux或BSD下的终端可能无法运行
+if empty($TMUX)
+  let &t_SI = "\<Esc>]50;CursorShape=1\x7"
+  let &t_EI = "\<Esc>]50;CursorShape=0\x7"
+  let &t_SR = "\<Esc>]50;CursorShape=2\x7"
+else
+  let &t_SI = "\<Esc>Ptmux;\<Esc>\<Esc>]50;CursorShape=1\x7\<Esc>\\"
+  let &t_EI = "\<Esc>Ptmux;\<Esc>\<Esc>]50;CursorShape=0\x7\<Esc>\\"
+  let &t_SR = "\<Esc>Ptmux;\<Esc>\<Esc>]50;CursorShape=2\x7\<Esc>\\"
+endif
+
+
 """""""""""
+" Plugging: https://github.com/junegunn/vim-plug
+"""""""""""
+
 
 " 1. Manual Installation
 " curl -fLo ~/.vim/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
@@ -245,7 +315,7 @@ let g:ycm_add_preview_to_completeopt = 1
 " let g:ycm_key_invoke_completion = '<D-;>'
 let g:ycm_semantic_triggers =  {'c,cpp,python,java,go': ['re!\w{2}'], 'cs,lua,javascript': ['re!\w{2}']}
 
-" Commenter config
+" Nerd commenter config
 " Add spaces after comment delimiters by default
 let g:NERDSpaceDelims = 1
 " Use compact syntax for prettified multi-line comments
@@ -268,6 +338,7 @@ nnoremap <C-n> :NERDTreeToggle<CR>
 
 " Open a NERDTree automatically when vim starts up
 autocmd vimenter * NERDTree
+
 " Close vim if the only window left open is a NERDTree
 autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
 

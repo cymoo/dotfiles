@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        body p {
+            margin: 0;
+            padding: 0;
+        }
+        #box {
+            padding: 30px;
+        }
+        #wrapper {
+            margin-top: 15px;
+        }
+        #wrapper > span {
+            display: inline-block;
+            padding-right: 10px;
+        }
+        .foo {
+            transform: translateX(30px);
+        }
+    </style>
+</head>
+<body>
+    <div id="box">
+        <div class="btn-group">
+            <button id="add">add</button>
+            <button id="remove">remove</button>
+            <button id="shuffle">shuffle</button>
+        </div>
+        <p id="wrapper"></p>
+    </div>
+    <script>
+        const addBtn = document.getElementById('add');
+        const removeBtn = document.getElementById('remove');
+        const shuffleBtn = document.getElementById('shuffle');
+        const wrapper = document.getElementById('wrapper');
+        const rects = new Map();
+        const offsetY = 50;
+
+        let count = 5;
+        initItems(count);
+
+        addBtn.addEventListener('click', () => {
+            const item = addItem(++count)
+            const rect = new Rect(item.getBoundingClientRect())
+            rect.top += offsetY;
+            rects.set(item.getAttribute('data-key'), rect);
+            play();
+        });
+
+        removeBtn.addEventListener('click', () => {
+            
+        })
+
+        shuffleBtn.addEventListener('click', () => {
+            const children = [...wrapper.children];
+            const randArr = Array.from({length: children.length}).map((_, i) => i);
+            shuffle(randArr);
+            const fragment = document.createDocumentFragment();
+            for (const idx of randArr) {
+                fragment.append(children[idx]);
+            }
+            wrapper.append(fragment);
+            play();
+        })
+
+        function Rect(clientRect) {
+            this.left = clientRect.left;
+            this.top = clientRect.top;
+        }
+
+        function play() {
+            let play;
+            for (const child of wrapper.children) {
+                const key = child.getAttribute('data-key');
+                player = flip(child, rects.get(key), child.getBoundingClientRect())
+            }
+            player.onfinish = () => {
+                saveRects()
+            }
+        }
+
+        function saveRects() {
+            for (const child of wrapper.children) {
+                rects.set(child.getAttribute('data-key'), new Rect(child.getBoundingClientRect()));
+            }
+        }
+
+        function addItem(val) {
+            const idx = random(0, wrapper.children.length-1);
+            const child = wrapper.children[idx];
+            const item = createItem(val);
+            wrapper.insertBefore(item, child);
+            return item;
+        }
+
+        function createItem(val) {
+            const item = document.createElement('span');
+            item.innerText = val;
+            item.setAttribute('data-key', val);
+            return item;
+        }
+
+        function initItems(count) {
+            const fragment = document.createDocumentFragment();
+            for (let i = 1; i <= count; i++) {
+                fragment.append(createItem(i));
+            }
+            wrapper.append(fragment);
+            saveRects()
+        }
+
+        function random(lo, hi) {
+            const offset = hi - lo + 1;
+            return Math.floor(Math.random() * offset + lo);
+        }
+        
+        function shuffle(arr) {
+            const len = arr.length;
+            for (let i = 0; i < len; i++) {
+                const idx = random(0, len-1);
+                const tmp = arr[i];
+                arr[i] = arr[idx];
+                arr[idx] = tmp;
+            }
+        }
+
+        function flip(el, rect1, rect2, duration=500) {
+            const dx = rect1.left - rect2.left;
+            const dy = rect1.top - rect2.top;
+
+            const player = el.animate([
+                {
+                    transformOrigin: 'top left',
+                    transform: `translate(${dx}px, ${dy}px)`
+                },
+                {
+                    transformOrigin: 'top left',
+                    transform: 'none'
+                },
+            ], 
+            {
+                duration,
+                easing: 'ease-in-out'
+            })
+
+            return player;
+        }
+    </script>
+</body>
+</html>

@@ -17,6 +17,7 @@ char* json_pack(const char *fmt, ...) {
     int alloc_len = MEM_BLOCK;
     char *buffer = malloc(alloc_len);
     if (buffer == NULL) {
+        fprintf(stderr, "error: malloc failed\n");
         return NULL;
     }
 
@@ -67,7 +68,10 @@ char* json_pack(const char *fmt, ...) {
         if (size + step >= alloc_len) {
             alloc_len = size + step + MEM_BLOCK;
             char *tmp = malloc(alloc_len);
-            if (tmp == NULL) return NULL;
+            if (tmp == NULL) {
+                fprintf(stderr, "error: malloc failed\n");
+                return NULL;
+            }
             memcpy(tmp, buffer, size);
             free(buffer);
             buffer = tmp;
